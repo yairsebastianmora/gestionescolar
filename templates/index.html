@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Biblioteca</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Sistema de Gestión de Biblioteca</h1>
+    
+
+
+    <div class="d-grid gap-3 col-6 mx-auto">
+        <a href="{{ url_for('registrar_libro') }}" class="btn btn-primary">Registrar Libro</a>
+        <a href="{{ url_for('prestados') }}" class="btn btn-info">Libros Prestados</a>
+        <a href="{{ url_for('autor_top') }}" class="btn btn-success">Autor con Más Libros</a>
+        <a href="{{ url_for('registrar_prestamo') }}" class="btn btn-warning">Registrar Préstamo</a>
+        <a href="{{ url_for('gestionar_libros') }}" class="btn btn-secondary">Gestionar Libros</a>
+    </div>
+    
+    <hr>
+    <h3 class="mt-4">Listado de Libros</h3>
+        <!-- Barra de búsqueda -->
+<!-- Barra de búsqueda -->
+<form method="GET" action="{{ url_for('index') }}" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por título, autor o disponibilidad" value="{{ query }}">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </div>
+</form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Disponible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for libro in libros %}
+            <tr>
+                <td>{{ libro.titulo }}</td>
+                <td>{{ libro.autor.nombre }}</td>
+                <td>{{ 'Sí' if libro.disponible else 'No' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

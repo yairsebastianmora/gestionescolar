@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Autor Top</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    h2 {
+        margin-bottom: 50px; /* Espaciado adicional debajo del título principal */
+    }
+    h3 {
+        margin-bottom: 50px; /* Espaciado adicional debajo del subtítulo */
+    }        
+    .podio {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 20px;
+        margin-bottom: 80px; /* Incrementamos el margen inferior para mayor separación */
+    }
+        .podio .puesto {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            position: relative; /* Para posicionar el número fuera del recuadro */
+        }
+        .puesto-1 {
+            background-color: gold;
+            color: black;
+            height: 180px;
+            width: 140px;
+        }
+        .puesto-2 {
+            background-color: silver;
+            color: black;
+            height: 150px;
+            width: 140px;
+        }
+        .puesto-3 {
+            background-color: #cd7f32; /* Bronce */
+            color: black;
+            height: 130px;
+            width: 140px;
+        }
+        .puesto h4 {
+            margin: 0;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .autor-nombre {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 50px;
+        }
+        .numero-libros-container {
+            position: absolute;
+            bottom: -62px; /* Coloca el número y el texto fuera del recuadro */
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .numero-libros {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .texto-libros {
+            font-size: 1rem;
+            color: #666;
+            margin: 0;
+        }
+    .lista-autores {
+        margin-top: 120px; /* Espaciado adicional entre el podio y la lista de autores */
+    }
+    .btn-volver {
+        position: absolute;
+        top: 20px; /* Ajusta la distancia desde la parte superior */
+        left: 20px; /* Para la esquina superior izquierda */
+        /* Si prefieres la esquina superior derecha, usa: */
+        /* right: 20px; */
+    }
+
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center">Autores con más libros en la biblioteca</h2>
+    {% if resultados %}
+    <div class="podio">
+        {% if resultados|length >= 1 %}
+        <div class="puesto puesto-1">
+            <h4>1°</h4>
+            <p class="autor-nombre">{{ resultados[0][0] }}</p>
+            <div class="numero-libros-container">
+                <p class="numero-libros">{{ resultados[0][1] }}</p>
+                <p class="texto-libros">libros</p>
+            </div>
+        </div>
+        {% endif %}
+        {% if resultados|length >= 2 %}
+        <div class="puesto puesto-2">
+            <h4>2°</h4>
+            <p class="autor-nombre">{{ resultados[1][0] }}</p>
+            <div class="numero-libros-container">
+                <p class="numero-libros">{{ resultados[1][1] }}</p>
+                <p class="texto-libros">libros</p>
+            </div>
+        </div>
+        {% endif %}
+        {% if resultados|length >= 3 %}
+        <div class="puesto puesto-3">
+            <h4>3°</h4>
+            <p class="autor-nombre">{{ resultados[2][0] }}</p>
+            <div class="numero-libros-container">
+                <p class="numero-libros">{{ resultados[2][1] }}</p>
+                <p class="texto-libros">libros</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-center">No hay autores registrados para mostrar.</p>
+    {% endif %}
+
+    <h3 class="mt-5 lista-autores">Lista de autores</h3>    {% if resultados %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Posición</th>
+                <th>Autor</th>
+                <th>Total de Libros</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for autor in resultados %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ autor[0] }}</td>
+                <td>{{ autor[1] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay autores registrados aún.</p>
+    {% endif %}
+    <a href="{{ url_for('index') }}" class="btn btn-secondary btn-volver">Volver</a></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
