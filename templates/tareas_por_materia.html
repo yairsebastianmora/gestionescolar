@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tareas de {{ materia.nombre }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table thead th {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+        .badge {
+            font-size: 1em;
+        }
+        .acciones {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-agregar {
+            margin-bottom: 20px;
+        }
+        .nav-btns {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Tareas de <span class="text-primary">{{ materia.nombre }}</span></h2>
+        <a href="{{ url_for('registrar_tarea', materia_id=materia.id) }}" class="btn btn-success btn-agregar">Agregar Tarea</a>
+    </div>
+    <div class="nav-btns mb-3">
+        <a href="/" class="btn btn-outline-primary me-2">Volver al inicio</a>
+        <a href="{{ url_for('gestionar_materias') }}" class="btn btn-outline-secondary">Ver todas las materias</a>
+    </div>
+    {% if tareas %}
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Fecha de entrega</th>
+                    <th>Estado</th>
+                    <th>Descripción</th>
+                    <th>Archivo</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for tarea in tareas %}
+                <tr>
+                    <td>{{ tarea.titulo }}</td>
+                    <td>{{ tarea.fecha_entrega.strftime('%d/%m/%Y') if tarea.fecha_entrega else 'Sin fecha' }}</td>
+                    <td>
+                        {% if tarea.estado == 'Entregada' or tarea.estado == 'Completada' %}
+                            <span class="badge bg-success">{{ tarea.estado }}</span>
+                        {% elif tarea.estado == 'Pendiente' %}
+                            <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ tarea.estado or 'Sin estado' }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ tarea.descripcion or 'Sin descripción' }}</td>
+                    <td>
+                        {% if tarea.archivo %}
+                            <a href="/uploads/{{ tarea.archivo }}" target="_blank" class="btn btn-outline-secondary btn-sm">Descargar</a>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center acciones">
+                        {% if tarea.estado == 'Pendiente' and not tarea.archivo %}
+                        <a href="{{ url_for('ver_tarea', tarea_id=tarea.id) }}" class="btn btn-warning btn-sm" title="Entregar tarea (subir archivo)">
+                            <i class="bi bi-upload"></i> Entregar
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-sm btn-primary">Editar</a>
+                        <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta tarea?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-info">No hay tareas registradas para esta materia.</div>
+    {% endif %}
+</div>
+</body>
+</html>

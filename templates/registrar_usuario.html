@@ -1,5 +1,51 @@
-<form method="POST" action="{{ url_for('registrar_usuario') }}">
-    <label for="nombre">Nombre del Usuario:</label>
-    <input type="text" id="nombre" name="nombre" required>
-    <button type="submit">Registrar Usuario</button>
-</form>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .register-container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            padding: 32px 28px 24px 28px;
+        }
+        .form-label { font-weight: 500; }
+        .btn-primary { width: 100%; }
+        .logo-title { text-align: center; font-size: 2rem; font-weight: bold; color: #0d6efd; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <div class="logo-title">Gestor Académico</div>
+    <h4 class="mb-3">Registro de Usuario</h4>
+    <form method="POST" action="{{ url_for('registrar_usuario') }}">
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="mb-3">
+            <label for="confirmar_password" class="form-label">Confirmar contraseña</label>
+            <input type="password" class="form-control" id="confirmar_password" name="confirmar_password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+        <a href="{{ url_for('login') }}" class="btn btn-link w-100 mt-2">¿Ya tienes cuenta? Inicia sesión</a>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning mt-3">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+</div>
+</body>
+</html>

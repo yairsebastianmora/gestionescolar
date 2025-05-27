@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calificaciones y Progreso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Calificaciones por Materia y Tarea</h2>
+        <a href="/" class="btn btn-secondary">Volver al inicio</a>
+    </div>
+    {% if mensaje %}
+        <div class="alert alert-info">{{ mensaje }}</div>
+    {% endif %}
+    <form method="POST" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="materia_id" class="form-label">Materia</label>
+                <select name="materia_id" id="materia_id" class="form-select" required onchange="filtrarTareas()">
+                    <option value="">Selecciona una materia</option>
+                    {% for materia in materias %}
+                        <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="tarea_id" class="form-label">Tarea</label>
+                <select name="tarea_id" id="tarea_id" class="form-select" required>
+                    <option value="">Selecciona una tarea</option>
+                    {% for tarea in tareas %}
+                        <option value="{{ tarea.id }}" data-materia="{{ tarea.materia_id }}">{{ tarea.titulo }} ({{ tarea.materia.nombre if tarea.materia else '' }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="nota" class="form-label">Nota</label>
+                <input type="number" step="0.01" min="0" max="5" name="nota" id="nota" class="form-control" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </form>
+    <h4>Mis Calificaciones</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Materia</th>
+                <th>Tarea</th>
+                <th>Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for materia in materias|sort(attribute='nombre') %}
+                {% for c in calificaciones|selectattr('materia_id', 'equalto', materia.id)|sort(attribute='nota', reverse=True) %}
+                <tr>
+                    <td>{{ materia.nombre }}</td>
+                    <td>{% for t in tareas %}{% if t.id == c.tarea_id %}{{ t.titulo }}{% endif %}{% endfor %}</td>
+                    <td>{{ c.nota }}</td>
+                </tr>
+                {% endfor %}
+                {# Mostrar tareas vencidas de esta materia #}
+                {% for tarea in tareas_vencidas if tarea.materia_id == materia.id %}
+                <tr class="table-danger">
+                    <td>{{ materia.nombre }}</td>
+                    <td>{{ tarea.titulo }}</td>
+                    <td>0</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if promedio_general %}
+        <div class="alert alert-success">Promedio general: <strong>{{ promedio_general }}</strong></div>
+    {% endif %}
+    {% if promedios %}
+        <div class="alert alert-info">
+            <strong>Promedio por materia:</strong>
+            <ul class="mb-0">
+                {% for materia, promedio in promedios.items() %}
+                    <li>{{ materia }}: <strong>{{ promedio }}</strong></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    <h4>Gráfico de Promedio por Materia</h4>
+    <canvas id="graficoNotas" width="400" height="150"></canvas>
+</div>
+<script>
+    // Filtrar tareas por materia seleccionada
+    function filtrarTareas() {
+        var materiaId = document.getElementById('materia_id').value;
+        var tareas = document.getElementById('tarea_id').options;
+        for (var i = 0; i < tareas.length; i++) {
+            var opt = tareas[i];
+            if (!opt.value) continue;
+            opt.style.display = (opt.getAttribute('data-materia') === materiaId) ? '' : 'none';
+        }
+        document.getElementById('tarea_id').value = '';
+    }
+    // Gráfico de promedios por materia
+    const ctx = document.getElementById('graficoNotas').getContext('2d');
+    const labels = {{ promedios.keys()|list|tojson }};
+    const data = {{ promedios.values()|list|tojson }};
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Promedio',
+                data: data,
+                backgroundColor: 'rgba(13, 110, 253, 0.7)'
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true, max: 5 }
+            }
+        }
+    });
+</script>
+</body>
+</html>

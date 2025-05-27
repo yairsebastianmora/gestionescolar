@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Tareas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-editar {
+            background: linear-gradient(90deg, #0d6efd 60%, #0a58ca 100%);
+            color: #fff;
+            border: none;
+            transition: background 0.3s;
+        }
+        .btn-editar:hover {
+            background: linear-gradient(90deg, #0a58ca 60%, #0d6efd 100%);
+            color: #fff;
+        }
+        .btn-ver {
+            background: linear-gradient(90deg, #20c997 60%, #198754 100%);
+            color: #fff;
+            border: none;
+            transition: background 0.3s;
+        }
+        .btn-ver:hover {
+            background: linear-gradient(90deg, #198754 60%, #20c997 100%);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Tareas Registradas</h2>
+        <a href="/gestionar_materias" class="btn btn-primary">Gestionar Materias</a>
+    </div>
+    <form method="GET" action="{{ url_for('buscar_tareas') }}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="estado" class="form-control" placeholder="Estado (pendiente, entregada)">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="materia_id" class="form-control" placeholder="ID Materia">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="fecha" class="form-control" placeholder="Fecha de entrega">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+        </div>
+    </form>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Materia</th>
+                <th>Fecha de entrega</th>
+                <th>Estado</th>
+                <th>Descripción</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tarea in tareas %}
+            <tr>
+                <td>{{ tarea.id }}</td>
+                <td>{{ tarea.titulo }}</td>
+                <td>{{ tarea.materia.nombre if tarea.materia else '-' }}</td>
+                <td>{{ tarea.fecha_entrega }}</td>
+                <td>
+                    {% if tarea.estado == 'Entregada' or tarea.estado == 'Completada' %}
+                        <span class="badge bg-success">{{ tarea.estado }}</span>
+                    {% elif tarea.estado == 'Pendiente' %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ tarea.estado or 'Sin estado' }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ tarea.descripcion or 'Sin descripción' }}</td>
+                <td>
+                    {% if tarea.archivo %}
+                        <a href="/uploads/{{ tarea.archivo }}" target="_blank" class="btn btn-outline-secondary btn-sm">Descargar</a>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="d-flex gap-1">
+                    {% if tarea.estado == 'Pendiente' and not tarea.archivo %}
+                    <a href="{{ url_for('ver_tarea', tarea_id=tarea.id) }}" class="btn btn-warning btn-sm" title="Entregar tarea (subir archivo)">
+                        <i class="bi bi-upload"></i> Entregar
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('tareas_por_materia', materia_id=tarea.materia_id) }}" class="btn btn-ver btn-sm" title="Ver todas las tareas de esta materia">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                    <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-editar btn-sm" title="Editar tarea">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta tarea?');">
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar tarea">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
+</div>
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

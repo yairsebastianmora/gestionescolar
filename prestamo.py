@@ -23,6 +23,9 @@ class Usuario(Base):
     __tablename__ = 'usuarios'
     id = Column(Integer, primary_key=True)
     nombre = Column(String, nullable=False)
+    documento_identidad = Column(String, unique=True, nullable=False)
+    correo = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)  # Campo para contraseña hasheada
     prestamos = relationship("Prestamo", back_populates="usuario")
 
 class Prestamo(Base):

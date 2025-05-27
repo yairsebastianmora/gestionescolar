@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Tarea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Registrar Tarea para Materia ID {{ materia_id }}</h2>
+    <form method="POST" id="formTarea" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título de la Tarea</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" required>
+        </div>
+        <div class="mb-3">
+            <label for="fecha_entrega" class="form-label">Fecha de Entrega</label>
+            <input type="date" class="form-control" id="fecha_entrega" name="fecha_entrega" required>
+        </div>
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción (opcional)</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar</button>
+        <button type="button" class="btn btn-info" id="verTareasBtn">Ver tareas</button>
+        <a href="{{ url_for('gestionar_materias') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+    document.getElementById('verTareasBtn').addEventListener('click', function() {
+        // Usamos materia_id que tienes en la plantilla para construir la URL
+        const materiaId = "{{ materia_id }}";
+        if (materiaId) {
+            window.location.href = `/tareas/${encodeURIComponent(materiaId)}`;
+        } else {
+            alert('No se encontró el ID de la materia para mostrar las tareas.');
+        }
+    });
+</script>
+
+</body>
+</html>
+

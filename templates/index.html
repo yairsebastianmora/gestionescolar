@@ -1,52 +1,184 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Biblioteca</title>
+    <title>Gestor Académico Personal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+    <style>
+        #calendar { max-width: 900px; margin: 40px auto; }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Sistema de Gestión de Biblioteca</h1>
-    
-
-
-    <div class="d-grid gap-3 col-6 mx-auto">
-        <a href="{{ url_for('registrar_libro') }}" class="btn btn-primary">Registrar Libro</a>
-        <a href="{{ url_for('prestados') }}" class="btn btn-info">Libros Prestados</a>
-        <a href="{{ url_for('autor_top') }}" class="btn btn-success">Autor con Más Libros</a>
-        <a href="{{ url_for('registrar_prestamo') }}" class="btn btn-warning">Registrar Préstamo</a>
-        <a href="{{ url_for('gestionar_libros') }}" class="btn btn-secondary">Gestionar Libros</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">  </span>
+        <div class="d-flex">
+            {% if session['usuario_id'] %}
+                <a href="{{ url_for('logout') }}" class="btn btn-danger ms-2">Cerrar sesión</a>
+            {% endif %}
+        </div>
     </div>
-    
+</nav>
+<div class="container">
+    <h1 class="text-center mb-4">Gestor Académico Personal</h1>
+    <div class="d-grid gap-3 col-6 mx-auto mb-4">
+        <a href="{{ url_for('registrar_materia') }}" class="btn btn-primary">Registrar Materia</a>
+        <a href="{{ url_for('gestionar_materias') }}" class="btn btn-secondary">Gestionar Materias</a>
+        <a href="{{ url_for('calificaciones') }}" class="btn btn-info">Ver Calificaciones</a>
+        <a href="{{ url_for('listar_tareas') }}" class="btn btn-success">Ver Todas las Tareas</a>
+    </div>
     <hr>
-    <h3 class="mt-4">Listado de Libros</h3>
-        <!-- Barra de búsqueda -->
-<!-- Barra de búsqueda -->
-<form method="GET" action="{{ url_for('index') }}" class="mb-4">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Buscar por título, autor o disponibilidad" value="{{ query }}">
-        <button type="submit" class="btn btn-primary">Buscar</button>
-    </div>
-</form>
+    <h3 class="mt-4">Listado de Materias</h3>
+    <form method="GET" action="{{ url_for('index') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por Nombre de la materia, Docente " value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </form>
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Título</th>
-                <th>Autor</th>
-                <th>Disponible</th>
+                <th>Nombre</th>
+                <th>Docente</th>
+                <th>Horario</th>
+                <th>Aula</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for libro in libros %}
+            {% for materia in materias %}
             <tr>
-                <td>{{ libro.titulo }}</td>
-                <td>{{ libro.autor.nombre }}</td>
-                <td>{{ 'Sí' if libro.disponible else 'No' }}</td>
+                <td>{{ materia.nombre }}</td>
+                <td>{{ materia.docente or '-' }}</td>
+                <td>{{ materia.horario or '-' }}</td>
+                <td>{{ materia.aula or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('registrar_tarea', materia_id=materia.id) }}" class="btn btn-success btn-sm mt-1">Registrar Tarea</a>
+                    <a href="{{ url_for('tareas_por_materia', materia_id=materia.id) }}" class="btn btn-info btn-sm mt-1">Ver Tareas</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% if mostrar_calendario %}
+    {% if proximos and proximos|length > 0 %}
+      <div class="alert alert-info mt-3">
+        <strong>Próximos eventos/tareas:</strong>
+        <ul class="mb-0 ps-0">
+          {% for item in proximos %}
+            <li class="d-flex align-items-center mb-2" style="list-style: none;">
+              <span class="badge me-2 px-2 py-1 fs-6
+                {% if item.tipo == 'evento' %}bg-primary
+                {% elif item.estado == 'entregada' or item.estado == 'Entregada' or item.estado == 'Completada' %}bg-success
+                {% elif item.fecha and item.fecha < hoy_str %}bg-danger
+                {% else %}bg-warning text-dark{% endif %}">
+                {% if item.tipo == 'evento' %}Evento{% else %}Tarea{% endif %}
+              </span>
+              <span class="fw-semibold">{{ item.texto }}</span>
+              <span class="text-muted ms-2">({{ item.fecha }})</span>
+              {% if item.tipo == 'tarea' %}
+                <a href="{{ url_for('tareas_por_materia', materia_id=item.materia_id) }}" class="btn btn-ver btn-sm ms-3" title="Ver todas las tareas de esta materia">
+                  <i class="bi bi-eye"></i> Ver
+                </a>
+                <a href="{{ url_for('ver_tarea', tarea_id=item.id) }}" class="btn btn-warning btn-sm ms-1" title="Entregar tarea (subir archivo)">
+                  <i class="bi bi-upload"></i> Entregar
+                </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% if tareas_vencidas and tareas_vencidas|length > 0 %}
+    <div class="alert alert-danger mt-2">
+        <strong>Tareas vencidas no entregadas:</strong>
+        <ul class="mb-0">
+            {% for tarea in tareas_vencidas %}
+            <li>
+                <span class="fw-semibold">{{ tarea.titulo }}</span> de <span class="text-primary">{{ tarea.materia.nombre if tarea.materia else 'Sin materia' }}</span>
+                <span class="text-muted">(Venció el {{ tarea.fecha_entrega.strftime('%Y-%m-%d') }})</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <span class="text-danger">Estas tareas cuentan como 0 en el promedio.</span>
+    </div>
+    {% endif %}
+    <hr>
+    <h3 class="mt-4">Calendario Académico</h3>
+    <div id='calendar'></div>
+    {% endif %}
 </div>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+<script>
+    {% if mostrar_calendario %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            events: [
+                {% for evento in eventos %}
+                {
+                    title: '{{ evento.title }} ({{ evento.materia }})',
+                    start: '{{ evento.start }}',
+                    description: '{{ evento.description }}',
+                    color: '{{ 'green' if evento.estado == 'entregada' else ('#0d6efd' if evento.estado == 'personalizado' else 'orange') }}'
+                },
+                {% endfor %}
+            ],
+            eventClick: function(info) {
+                // Buscar el id de la tarea por el título y la fecha
+                const title = info.event.title.split(' (')[0].trim();
+                const fecha = info.event.startStr;
+                // Buscar en la tabla de tareas de la página (si está cargada)
+                let tareaId = null;
+                {% for tarea in tareas %}
+                if (title === '{{ tarea.titulo }}' && fecha === '{{ tarea.fecha_entrega.strftime('%Y-%m-%d') if tarea.fecha_entrega else '' }}') {
+                    tareaId = {{ tarea.id }};
+                }
+                {% endfor %}
+                if (tareaId) {
+                    window.location.href = `/ver_tarea/${tareaId}`;
+                    return;
+                }
+                alert(info.event.title + '\n' + info.event.extendedProps.description);
+            }
+        });
+        calendar.render();
+    });
+    {% endif %}
+</script>
+<!-- Bootstrap Icons y estilos para botones -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+.btn-editar {
+    background: linear-gradient(90deg, #0d6efd 60%, #0a58ca 100%);
+    color: #fff;
+    border: none;
+    transition: background 0.3s;
+}
+.btn-editar:hover {
+    background: linear-gradient(90deg, #0a58ca 60%, #0d6efd 100%);
+    color: #fff;
+}
+.btn-ver {
+    background: linear-gradient(90deg, #20c997 60%, #198754 100%);
+    color: #fff;
+    border: none;
+    transition: background 0.3s;
+}
+.btn-ver:hover {
+    background: linear-gradient(90deg, #198754 60%, #20c997 100%);
+    color: #fff;
+}
+.alert-info ul.mb-0 > li {
+    border-radius: 6px;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+</style>
 </body>
 </html>
